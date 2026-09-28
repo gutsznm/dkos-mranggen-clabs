@@ -1,0 +1,233 @@
+paths:
+  /api/payments/{bookingId}/proof:
+    post:
+      summary: Upload payment proof
+      tags: [Payment]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: bookingId
+          required: true
+          schema:
+            type: string
+          description: Booking ID
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - media
+              properties:
+                media:
+                  type: string
+                  format: binary
+                  description: Bukti pembayaran (image)
+      responses:
+        200:
+          description: Bukti pembayaran berhasil diupload
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    properties:
+                      paymentProof:
+                        type: string
+                      paymentStatus:
+                        type: string
+        400:
+          description: Data tidak valid atau status booking tidak sesuai
+        401:
+          description: Token tidak valid
+        403:
+          description: Akses ditolak
+        404:
+          description: Booking tidak ditemukan
+
+  /api/payments/{bookingId}/verify:
+    post:
+      summary: Verify payment (admin only)
+      tags: [Payment]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: bookingId
+          required: true
+          schema:
+            type: string
+          description: Booking ID
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                adminNotes:
+                  type: string
+                  maxLength: 500
+      responses:
+        200:
+          description: Pembayaran berhasil diverifikasi
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/Booking'
+        400:
+          description: Pembayaran belum dilakukan
+        401:
+          description: Token tidak valid atau bukan admin
+        404:
+          description: Booking tidak ditemukan
+
+    put:
+      summary: Verify payment (admin only - PUT)
+      tags: [Payment]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: bookingId
+          required: true
+          schema:
+            type: string
+          description: Booking ID
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                adminNotes:
+                  type: string
+                  maxLength: 500
+      responses:
+        200:
+          description: Pembayaran berhasil diverifikasi
+        400:
+          description: Pembayaran belum dilakukan
+        401:
+          description: Token tidak valid atau bukan admin
+        404:
+          description: Booking tidak ditemukan
+
+  /api/payments/{bookingId}/reject:
+    put:
+      summary: Reject payment (admin only)
+      tags: [Payment]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: bookingId
+          required: true
+          schema:
+            type: string
+          description: Booking ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - adminNotes
+              properties:
+                adminNotes:
+                  type: string
+                  maxLength: 500
+      responses:
+        200:
+          description: Pembayaran berhasil ditolak
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/Booking'
+        400:
+          description: Data tidak valid atau pembayaran belum dilakukan
+        401:
+          description: Token tidak valid atau bukan admin
+        404:
+          description: Booking tidak ditemukan
+
+  /api/payments/stats:
+    get:
+      summary: Get payment statistics (admin only)
+      tags: [Payment]
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: Statistik pembayaran berhasil diambil
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    properties:
+                      unpaidPayments:
+                        type: number
+                      paidPayments:
+                        type: number
+                      verifiedPayments:
+                        type: number
+                      totalRevenue:
+                        type: number
+                      pendingRevenue:
+                        type: number
+        401:
+          description: Token tidak valid atau bukan admin
+
+  /api/payments/by-status/{status}:
+    get:
+      summary: Get payments by status (admin only)
+      tags: [Payment]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: status
+          required: true
+          schema:
+            type: string
+            enum: [unpaid, paid, verified]
+          description: Status pembayaran
+      responses:
+        200:
+          description: Data pembayaran berhasil diambil
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Booking'
+        400:
+          description: Status pembayaran tidak valid
+        401:
+          description: Token tidak valid atau bukan admin

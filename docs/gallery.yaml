@@ -1,0 +1,255 @@
+paths:
+  /api/gallery:
+    get:
+      summary: Get all gallery items (public)
+      tags: [Gallery]
+      parameters:
+        - in: query
+          name: kostId
+          schema:
+            type: string
+          description: Filter by kost ID
+        - in: query
+          name: mediaType
+          schema:
+            type: string
+            enum: [image, video]
+          description: Filter by media type
+        - in: query
+          name: isActive
+          schema:
+            type: boolean
+          description: Filter by active status
+      responses:
+        200:
+          description: Data gallery berhasil diambil
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Gallery'
+
+    post:
+      summary: Upload single media (admin only)
+      tags: [Gallery]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - title
+                - kostId
+                - media
+              properties:
+                title:
+                  type: string
+                description:
+                  type: string
+                kostId:
+                  type: string
+                mediaType:
+                  type: string
+                  enum: [image, video]
+                order:
+                  type: integer
+                media:
+                  type: string
+                  format: binary
+      responses:
+        201:
+          description: Media berhasil diupload
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/Gallery'
+        400:
+          description: Data tidak valid
+        401:
+          description: Token tidak valid
+        404:
+          description: Kost tidak ditemukan
+
+  /api/gallery/multiple:
+    post:
+      summary: Upload multiple media (admin only)
+      tags: [Gallery]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - kostId
+                - media
+              properties:
+                kostId:
+                  type: string
+                mediaType:
+                  type: string
+                  enum: [image, video]
+                media:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+      responses:
+        201:
+          description: Media berhasil diupload
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Gallery'
+        400:
+          description: Data tidak valid
+        401:
+          description: Token tidak valid
+        404:
+          description: Kost tidak ditemukan
+
+  /api/gallery/{id}:
+    get:
+      summary: Get gallery by ID (public)
+      tags: [Gallery]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: Gallery ID
+      responses:
+        200:
+          description: Data gallery berhasil diambil
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/Gallery'
+        404:
+          description: Gallery tidak ditemukan
+
+    put:
+      summary: Update gallery item (admin only)
+      tags: [Gallery]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: Gallery ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                description:
+                  type: string
+                kostId:
+                  type: string
+                mediaType:
+                  type: string
+                  enum: [image, video]
+                order:
+                  type: integer
+                isActive:
+                  type: boolean
+      responses:
+        200:
+          description: Gallery berhasil diperbarui
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/Gallery'
+        400:
+          description: Data tidak valid
+        401:
+          description: Token tidak valid
+        404:
+          description: Gallery tidak ditemukan
+
+    delete:
+      summary: Delete gallery item (admin only)
+      tags: [Gallery]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: Gallery ID
+      responses:
+        200:
+          description: Gallery berhasil dihapus
+        401:
+          description: Token tidak valid
+        404:
+          description: Gallery tidak ditemukan
+
+  /api/gallery/kost/{kostId}:
+    get:
+      summary: Get gallery by kost ID (public)
+      tags: [Gallery]
+      parameters:
+        - in: path
+          name: kostId
+          required: true
+          schema:
+            type: string
+          description: Kost ID
+      responses:
+        200:
+          description: Data gallery kost berhasil diambil
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Gallery'

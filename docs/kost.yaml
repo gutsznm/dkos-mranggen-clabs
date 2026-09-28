@@ -1,0 +1,305 @@
+paths:
+  /api/kost:
+    get:
+      summary: Get all kosts (public)
+      tags: [Kost]
+      parameters:
+        - in: query
+          name: roomType
+          schema:
+            type: string
+            enum: [A, B]
+          description: Filter by room type
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [available, full, maintenance]
+          description: Filter by status
+        - in: query
+          name: minPrice
+          schema:
+            type: number
+          description: Minimum price filter
+        - in: query
+          name: maxPrice
+          schema:
+            type: number
+          description: Maximum price filter
+      responses:
+        200:
+          description: Data kost berhasil diambil
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Data kost berhasil diambil
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Kost'
+
+    post:
+      summary: Create new kost (admin only)
+      tags: [Kost]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - address
+                - description
+                - roomType
+                - price
+                - totalRooms
+                - availableRooms
+                - facilities
+                - rules
+              properties:
+                name:
+                  type: string
+                  minLength: 2
+                  maxLength: 200
+                  description: Nama kost
+                address:
+                  type: string
+                  description: Alamat kost
+                description:
+                  type: string
+                  description: Deskripsi kost
+                roomType:
+                  type: string
+                  enum: [A, B]
+                  description: Tipe kamar
+                price:
+                  type: number
+                  minimum: 0
+                  description: Harga per bulan
+                totalRooms:
+                  type: number
+                  minimum: 1
+                  description: Total kamar
+                availableRooms:
+                  type: number
+                  minimum: 0
+                  description: Kamar tersedia
+                facilities:
+                  type: array
+                  items:
+                    type: string
+                  description: Daftar fasilitas
+                rules:
+                  type: array
+                  items:
+                    type: string
+                  description: Daftar peraturan
+                images:
+                  type: array
+                  items:
+                    type: string
+                  description: Daftar URL gambar
+      responses:
+        201:
+          description: Kost berhasil ditambahkan
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Kost berhasil ditambahkan
+                  data:
+                    $ref: '#/components/schemas/Kost'
+        400:
+          description: Data tidak valid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        401:
+          description: Tidak memiliki akses
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Akses ditolak. Anda tidak memiliki izin admin.
+
+  /api/kost/{id}:
+    get:
+      summary: Get kost by ID (public)
+      tags: [Kost]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: Kost ID
+      responses:
+        200:
+          description: Data kost berhasil diambil
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Data kost berhasil diambil
+                  data:
+                    $ref: '#/components/schemas/Kost'
+        404:
+          description: Kost tidak ditemukan
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Kost tidak ditemukan
+
+    put:
+      summary: Update kost (admin only)
+      tags: [Kost]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: Kost ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  minLength: 2
+                  maxLength: 200
+                address:
+                  type: string
+                description:
+                  type: string
+                roomType:
+                  type: string
+                  enum: [A, B]
+                price:
+                  type: number
+                  minimum: 0
+                totalRooms:
+                  type: number
+                  minimum: 1
+                availableRooms:
+                  type: number
+                  minimum: 0
+                facilities:
+                  type: array
+                  items:
+                    type: string
+                rules:
+                  type: array
+                  items:
+                    type: string
+                images:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        200:
+          description: Kost berhasil diperbarui
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Kost berhasil diperbarui
+                  data:
+                    $ref: '#/components/schemas/Kost'
+        400:
+          description: Data tidak valid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        401:
+          description: Tidak memiliki akses
+        404:
+          description: Kost tidak ditemukan
+
+    delete:
+      summary: Delete kost (admin only)
+      tags: [Kost]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: Kost ID
+      responses:
+        200:
+          description: Kost berhasil dihapus
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Kost berhasil dihapus
+        401:
+          description: Tidak memiliki akses
+        404:
+          description: Kost tidak ditemukan
+
+  /api/kost/type/{roomType}:
+    get:
+      summary: Get kosts by room type
+      tags: [Kost]
+      parameters:
+        - in: path
+          name: roomType
+          required: true
+          schema:
+            type: string
+            enum: [A, B]
+          description: Tipe kamar
+      responses:
+        200:
+          description: Data kost tipe tertentu berhasil diambil
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Data kost tipe A berhasil diambil
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Kost'
+        400:
+          description: Tipe kamar tidak valid
